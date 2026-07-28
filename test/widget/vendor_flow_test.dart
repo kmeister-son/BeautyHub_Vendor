@@ -122,4 +122,36 @@ void main() {
 
     expect(find.text('Incorrect email or password.'), findsOneWidget);
   });
+
+  testWidgets('a locked-out owner resets their password from the login screen',
+      (tester) async {
+    await _pumpApp(tester);
+    expect(find.text('Welcome, partner 💜'), findsOneWidget);
+
+    await tester.tap(find.text('Forgot password?'));
+    await tester.pumpAndSettle();
+    expect(find.text('Reset your password'), findsOneWidget);
+
+    // Step 1: request a code for the account's email.
+    await tester.enterText(
+        find.byType(TextFormField).first, 'owner-velvet@beautyhub.app');
+    await tester.tap(find.widgetWithText(FilledButton, 'Send reset code'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('code is on its way'), findsOneWidget);
+
+    // Step 2: a wrong code is rejected, the right one lands back on login.
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(1), '000000');
+    await tester.enterText(fields.at(2), 'brand-new-password');
+    await tester.tap(find.widgetWithText(FilledButton, 'Reset password'));
+    await tester.pumpAndSettle();
+    expect(find.text('Invalid or expired code'), findsOneWidget);
+
+    await tester.enterText(fields.at(1), MockVendorAuthRepository.resetCode);
+    await tester.tap(find.widgetWithText(FilledButton, 'Reset password'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Welcome, partner 💜'), findsOneWidget);
+    expect(find.textContaining('sign in with your new one'), findsOneWidget);
+  });
 }

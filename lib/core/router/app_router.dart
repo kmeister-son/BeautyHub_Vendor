@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/salon/presentation/salon_editor_screen.dart';
 import '../../features/salon/presentation/salon_screen.dart';
@@ -27,6 +28,11 @@ final appRouter = GoRouter(
       path: '/login',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/forgot-password',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const ForgotPasswordScreen(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>

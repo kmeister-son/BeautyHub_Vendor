@@ -5,10 +5,12 @@ import '../api/api_client.dart';
 /// In-memory [VendorAuthRepository] for widget tests and offline demos.
 /// Accepts any `owner-*` email with [password]; other credentials behave
 /// like the API (401 for bad password, 403 for non-provider accounts).
+/// The password-reset code is always [resetCode].
 class MockVendorAuthRepository implements VendorAuthRepository {
   MockVendorAuthRepository({this.latency = Duration.zero});
 
   static const password = 'provider_dev_password';
+  static const resetCode = '123456';
 
   final Duration latency;
   UserProfile? _current;
@@ -47,5 +49,21 @@ class MockVendorAuthRepository implements VendorAuthRepository {
   Future<void> signOut() async {
     await Future<void>.delayed(latency);
     _current = null;
+  }
+
+  @override
+  Future<void> requestPasswordReset(String email) =>
+      Future<void>.delayed(latency);
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    await Future<void>.delayed(latency);
+    if (code != resetCode) {
+      throw ApiException(400, 'Invalid or expired code');
+    }
   }
 }

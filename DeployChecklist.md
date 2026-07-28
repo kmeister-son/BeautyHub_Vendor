@@ -5,16 +5,14 @@ app (`D:\Mobile_Apps\BeautyHub\DeployChecklist.md`). This app is Flutter,
 Android + iOS, same architecture pattern as the customer app, backed by the
 same `beautyhub-api`.
 
-## Open decision (affects scope below)
+## Open decision — RESOLVED 2026-07-29: full public Play Store listing
 
-This app is login-only for seeded/invited salon owners (`owner-*@beautyhub.app`
-accounts) — there's no public sign-up. **Recommendation: distribute via Play
-Console's Closed Testing track and TestFlight's internal testing, not a
-public store listing.** That skips public-facing requirements (privacy policy
-page discoverable by the public, public screenshots, full Data Safety
-disclosure detail) since access is invite-only. Confirm this is actually the
-plan before treating the "store compliance" section below as scoped correctly
-— a public listing would need to add those items back.
+Owner confirmed the app goes out as a **full public listing**, not a closed
+track. That pulls in the complete public-facing compliance set (see "Store
+compliance" below). Note for review: because the app is login-only with no
+sign-up, Google Play's app review requires **demo credentials** to be supplied
+in the Play Console ("App access" declaration) — plan to provide a dedicated
+demo provider account on the production backend, not a real salon's login.
 
 Note: this doesn't need a *second* Apple Developer Program membership or Play
 Console developer account — both are account-level, not per-app. Once
@@ -37,38 +35,55 @@ same accounts.
 
 ## Backend
 
-- [ ] Shares `beautyhub-api` with the customer app — no separate backend
-      work needed here. Once that's hosted on Railway (see customer app's
-      checklist), point this app's `ApiConfig.baseUrl` at the same URL via
-      `--dart-define=API_BASE_URL=...`.
-- [ ] No mailer/password-reset concern here — this app has no sign-up and
-      presumably no self-service password reset (confirm: how do salon
-      owners recover a forgotten password today?).
+- [ ] **Still the #1 blocker (confirmed 2026-07-29: hosting planned, not
+      started).** Shares `beautyhub-api` with the customer app — no separate
+      backend work needed here. Once that's hosted on Railway (see customer
+      app's checklist), build with
+      `flutter build appbundle --dart-define=API_BASE_URL=https://<prod-url>`.
+      Without the define, release builds point at emulator-only localhost
+      over cleartext HTTP and cannot work.
+- [x] **Done 2026-07-29:** "Forgot password?" flow added — login screen
+      links to `/forgot-password` (ported from the customer app), wired to
+      the API's `/auth/forgot-password` + `/auth/reset-password` endpoints
+      via `VendorAuthRepository`. Covered by a widget test on the mock.
 
 ## Release signing & builds
 
-- [ ] **Needs its own upload keystore — cannot reuse the customer app's.**
-      Currently signs release with the debug keystore
-      (`android/app/build.gradle.kts`, same unfixed TODO as the customer app
-      had). Bundle ID is `com.beautyhub.beautyhub_vendor` (Android) /
-      `com.beautyhub.beautyhubVendor` (iOS) — distinct from the customer
-      app, so a distinct signing identity either way.
+- [x] **Fixed 2026-07-29:** own upload keystore generated at
+      `android/app/upload-keystore.jks` (alias `upload`, credentials in
+      `android/key.properties` — both git-ignored), release signing wired in
+      `android/app/build.gradle.kts` mirroring the customer app's setup.
+      **Back up the keystore + key.properties somewhere safe (password
+      manager / secure storage) — they are not in git, and losing them
+      before first upload means regenerating; after first upload, enroll in
+      Play App Signing so Google holds the app signing key.**
+- [x] **Done 2026-07-29:** version scheme set (`0.1.0+1` in pubspec —
+      bump the `+N` build number for every Play upload). Display name set
+      to "BeautyHub Vendor" (Android manifest + iOS Info.plist).
+      `flutter_launcher_icons` wired; drop the real 1024×1024 icon at
+      `assets/icon/app_icon.png` and run `dart run flutter_launcher_icons`
+      (see `assets/icon/README.md`) — until then it's still the Flutter
+      default icon, which Play review may flag.
 - [ ] iOS: same "no Mac" situation as the customer app — Codemagic (or
       similar) needed once Apple Developer enrollment clears.
 - [ ] No git remote configured yet (`git remote -v` is empty) — this repo
       isn't pushed to GitHub at all. That's a prerequisite for GitHub Actions
       CI and for Codemagic's GitHub-OAuth repo connection.
 
-## Store compliance
+## Store compliance (public listing — full set applies)
 
-- [ ] If going the closed/internal-testing route (recommended above): still
-      need a minimal Play Console app entry and App Store Connect app
-      record, but can skip the public privacy policy page and full public
-      store listing assets.
-- [ ] If a public listing is wanted instead: same full list as the customer
-      app (Data Safety form, App Privacy label, screenshots, age rating,
-      etc.) — ask before assuming which applies.
-- [ ] Confirm final app icon/launch screen aren't still Flutter defaults.
+- [ ] Public privacy policy page at a stable URL (required field in Play
+      Console; must cover the account/booking data this app handles).
+- [ ] Data Safety form (collects: email, name, booking/schedule data;
+      transmitted to beautyhub-api; declare encryption-in-transit once the
+      backend is HTTPS).
+- [ ] Store listing assets: phone screenshots (min 2), feature graphic
+      1024×500, app icon 512×512, short + full description.
+- [ ] Content rating questionnaire (should come out "Everyone").
+- [ ] "App access" declaration with working demo provider credentials for
+      Google's reviewers (login-only app).
+- [ ] Final launcher icon + launch screen replaced (icon plumbing is in;
+      asset still pending — see Release signing section).
 
 ## Quality gates
 

@@ -46,4 +46,21 @@ class ApiVendorAuthRepository implements VendorAuthRepository {
 
   @override
   Future<void> signOut() => _client.clearToken();
+
+  @override
+  Future<void> requestPasswordReset(String email) async {
+    await _client.post('/auth/forgot-password',
+        body: {'email': email}, authenticated: false);
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    await _client.post('/auth/reset-password',
+        body: {'email': email, 'code': code, 'password': newPassword},
+        authenticated: false);
+  }
 }
