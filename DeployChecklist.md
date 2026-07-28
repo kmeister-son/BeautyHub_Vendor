@@ -66,9 +66,9 @@ same accounts.
       default icon, which Play review may flag.
 - [ ] iOS: same "no Mac" situation as the customer app — Codemagic (or
       similar) needed once Apple Developer enrollment clears.
-- [ ] No git remote configured yet (`git remote -v` is empty) — this repo
-      isn't pushed to GitHub at all. That's a prerequisite for GitHub Actions
-      CI and for Codemagic's GitHub-OAuth repo connection.
+- [x] **Done 2026-07-29:** repo pushed to GitHub
+      (`kmeister-son/BeautyHub_Vendor`), unblocking Actions CI (now live —
+      see Quality gates) and a future Codemagic connection for iOS.
 
 ## Store compliance (public listing — full set applies)
 
@@ -87,12 +87,13 @@ same accounts.
 
 ## Quality gates
 
-- [ ] No CI at all yet (`.github/` doesn't exist). Existing test coverage is
-      actually reasonable already: `test/unit/api_client_test.dart`,
-      `test/unit/mock_vendor_repository_test.dart`,
-      `test/widget/vendor_flow_test.dart`. A `ci.yml` mirroring the customer
-      app's (`analyze` + `test`, then a `build-android` job once a keystore
-      exists) would close this gap quickly.
+- [x] **Done 2026-07-29:** CI live and green
+      (`.github/workflows/ci.yml`, mirror of the customer app's) — `flutter
+      analyze` + `flutter test` on every push/PR, then a signed release
+      `.aab` built from repo secrets and uploaded as an artifact on pushes
+      to `main`. First run passed end-to-end. Repo pushed to
+      https://github.com/kmeister-son/BeautyHub_Vendor with signing secrets
+      (`ANDROID_KEYSTORE_*`, `ANDROID_KEY_*`) set via `gh secret set`.
 - [ ] No crash reporting/analytics wired in, same as the customer app.
 
 ## Not applicable / lower priority for this app
