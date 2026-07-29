@@ -61,7 +61,7 @@ void main() {
     expect(find.text('Today'), findsOneWidget);
     expect(find.text('Appointments'), findsOneWidget);
     expect(find.text('2'), findsOneWidget);
-    expect(find.text(r'$80'), findsOneWidget);
+    expect(find.text('R80'), findsOneWidget);
     expect(find.text('Thandi M'), findsOneWidget);
     expect(find.text('with Amara Osei'), findsOneWidget);
 

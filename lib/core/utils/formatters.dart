@@ -3,9 +3,21 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/service_category.dart';
 
 /// Central formatting helpers so currency/locale changes happen in one place.
+///
+/// BeautyHub's launch market is South Africa: prices are rands, formatted per
+/// the en_ZA locale ("R250", "R1 234,50"). Entering a new market means
+/// changing [currencyCode], [_currencySymbol], and [_locale] here — nowhere
+/// else in the app names a currency. Payment integrations (Stripe) must use
+/// [currencyCode] so charges stay in the same currency as displayed prices.
 abstract final class Formatters {
-  static final _money = NumberFormat.currency(symbol: r'$', decimalDigits: 0);
-  static final _moneyPrecise = NumberFormat.currency(symbol: r'$');
+  static const currencyCode = 'ZAR';
+  static const _currencySymbol = 'R';
+  static const _locale = 'en_ZA';
+
+  static final _money = NumberFormat.currency(
+      locale: _locale, symbol: _currencySymbol, decimalDigits: 0);
+  static final _moneyPrecise =
+      NumberFormat.currency(locale: _locale, symbol: _currencySymbol);
 
   static String money(double value) =>
       value == value.roundToDouble() ? _money.format(value) : _moneyPrecise.format(value);
