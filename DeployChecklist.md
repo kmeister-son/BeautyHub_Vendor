@@ -67,6 +67,20 @@ BeautyHub. Check your connection." This whole section becomes obsolete once
 the backend is hosted over HTTPS — then a plain
 `--dart-define=API_BASE_URL=https://<prod-url>` works from any network.
 
+**Wireless variant (no USB cable)** — verified working 2026-07-30. With the
+phone and PC on the same WiFi, plug in once and run:
+
+1. `adb tcpip 5555`, then `adb connect <phone-ip>:5555` (phone IP from
+   `adb shell ip -f inet addr show wlan0`, or Settings → About).
+2. Unplug. Re-run step 2 from the checklist above against the WiFi device —
+   `adb -s <phone-ip>:5555 reverse tcp:3000 tcp:3000` — and launch with
+   `flutter run -d <phone-ip>:5555 --dart-define=API_BASE_URL=http://localhost:3000`.
+   Hot reload and the API tunnel both work over WiFi.
+
+Caveats: adb reverts to USB mode when the phone reboots (plug in and redo
+`adb tcpip 5555`), and the phone's IP is a DHCP lease, so the connect
+address can change between sessions.
+
 ## Release signing & builds
 
 - [x] **Fixed 2026-07-29:** own upload keystore generated at
