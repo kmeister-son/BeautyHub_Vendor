@@ -47,6 +47,26 @@ same accounts.
       the API's `/auth/forgot-password` + `/auth/reset-password` endpoints
       via `VendorAuthRepository`. Covered by a widget test on the mock.
 
+## Dev testing on a physical device (added 2026-07-30)
+
+Until the backend is hosted, running on a real phone (vs. an emulator) needs
+three things — verified working on a USB-connected Android 15 device:
+
+1. Start the API locally: `npm run start:dev` in `D:\Mobile_Apps\beautyhub-api`
+   (Postgres on 5432 must be up).
+2. Tunnel the phone's port 3000 to the PC: `adb reverse tcp:3000 tcp:3000`.
+   This resets whenever the phone disconnects, so re-run it per session.
+3. Launch with the base-URL override, because the Android default
+   `http://10.0.2.2:3000` only resolves inside an emulator:
+   `flutter run --dart-define=API_BASE_URL=http://localhost:3000`
+   (`localhost` here is the phone's own loopback, which adb reverse forwards
+   to the PC).
+
+Symptom when any of these is missing: login fails with "Could not reach
+BeautyHub. Check your connection." This whole section becomes obsolete once
+the backend is hosted over HTTPS — then a plain
+`--dart-define=API_BASE_URL=https://<prod-url>` works from any network.
+
 ## Release signing & builds
 
 - [x] **Fixed 2026-07-29:** own upload keystore generated at
