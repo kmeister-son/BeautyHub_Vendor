@@ -33,6 +33,18 @@ Future<void> _signIn(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// Leaves the shared router back on login for the next test.
+Future<void> _signOut(WidgetTester tester) async {
+  await _openTab(tester, 'My salon');
+  await tester.dragUntilVisible(
+      find.text('Sign out'), find.byType(ListView), const Offset(0, -120));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Sign out'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.widgetWithText(FilledButton, 'Sign out'));
+  await tester.pumpAndSettle();
+}
+
 Future<void> _openTab(WidgetTester tester, String label) async {
   await tester.tap(find.descendant(
     of: find.byType(NavigationBar),
@@ -57,13 +69,16 @@ void main() {
 
     await _signIn(tester);
 
-    // Schedule: today's two bookings and the takings strip.
+    // Schedule: today's two confirmed bookings and the takings strip. The
+    // pending request is listed separately and excluded from the takings.
     expect(find.text('Today'), findsOneWidget);
     expect(find.text('Appointments'), findsOneWidget);
     expect(find.text('2'), findsOneWidget);
     expect(find.text('R80'), findsOneWidget);
     expect(find.text('Thandi M'), findsOneWidget);
     expect(find.text('with Amara Osei'), findsOneWidget);
+    expect(find.text('1 request'), findsOneWidget);
+    expect(find.text('Naledi K'), findsOneWidget);
 
     // Services: the menu renders and a new service can be added.
     await _openTab(tester, 'Services');
@@ -90,15 +105,47 @@ void main() {
     await _openTab(tester, 'My salon');
     expect(find.text('Velvet & Vine'), findsOneWidget);
 
-    await tester.dragUntilVisible(
-        find.text('Sign out'), find.byType(ListView), const Offset(0, -120));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Sign out'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign out'));
-    await tester.pumpAndSettle();
+    await _signOut(tester);
 
     expect(find.text('Welcome, partner 💜'), findsOneWidget);
+  });
+
+  testWidgets('owner accepts a booking request from the schedule',
+      (tester) async {
+    await _pumpApp(tester);
+    await _signIn(tester);
+
+    // The request sits above the day with its own actions.
+    expect(find.text('1 request'), findsOneWidget);
+    expect(find.text('Naledi K'), findsOneWidget);
+    expect(find.text('2'), findsOneWidget); // confirmed appointments only
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Accept'));
+    await tester.pumpAndSettle();
+
+    // Accepted: the requests section is gone and the day counts it now.
+    expect(find.text('1 request'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Accept'), findsNothing);
+    expect(find.text('Naledi K'), findsOneWidget);
+    expect(find.text('3'), findsOneWidget);
+    expect(find.textContaining('is confirmed'), findsOneWidget);
+
+    await _signOut(tester);
+  });
+
+  testWidgets('declining a request removes it from the day', (tester) async {
+    await _pumpApp(tester);
+    await _signIn(tester);
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Decline'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 request'), findsNothing);
+    expect(find.text('Naledi K'), findsNothing);
+    expect(find.text('2'), findsOneWidget);
+    expect(find.textContaining('Declined'), findsOneWidget);
+
+    await _signOut(tester);
   });
 
   testWidgets('customer credentials are turned away with a clear message',

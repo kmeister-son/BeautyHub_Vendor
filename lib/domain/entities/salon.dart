@@ -19,6 +19,7 @@ class Salon {
     required this.closeHour,
     required this.isFeatured,
     required this.coverSeed,
+    this.autoConfirmBookings = true,
     required this.services,
     required this.staff,
     required this.reviews,
@@ -43,6 +44,10 @@ class Salon {
   /// Deterministic seed used by the UI to pick a cover gradient
   /// until real vendor photos are wired in.
   final int coverSeed;
+
+  /// True: bookings confirm instantly. False: each booking arrives as a
+  /// pending request the owner must accept or decline.
+  final bool autoConfirmBookings;
 
   final List<SalonService> services;
   final List<StaffMember> staff;

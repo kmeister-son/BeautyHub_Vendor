@@ -20,6 +20,7 @@ class MockVendorRepository implements VendorRepository {
   String _address = '12 Rose Lane, City Centre';
   int _openHour = 9;
   int _closeHour = 18;
+  bool _autoConfirmBookings = false;
 
   final List<SalonService> _services = [
     const SalonService(
@@ -50,6 +51,17 @@ class MockVendorRepository implements VendorRepository {
     DateTime at(int hour, [int minute = 0]) =>
         DateTime(today.year, today.month, today.day, hour, minute);
     return [
+      VendorBooking(
+        id: 'bk-3',
+        customerName: 'Naledi K',
+        serviceNames: const ['Gel manicure'],
+        staffName: 'Lindiwe Dube',
+        start: at(16),
+        totalDurationMinutes: 45,
+        totalPrice: 35,
+        status: BookingStatus.pending,
+        expiresAt: today.add(const Duration(hours: 20)),
+      ),
       VendorBooking(
         id: 'bk-1',
         customerName: 'Thandi M',
@@ -87,6 +99,7 @@ class MockVendorRepository implements VendorRepository {
         closeHour: _closeHour,
         isFeatured: true,
         coverSeed: 0,
+        autoConfirmBookings: _autoConfirmBookings,
         services: List.unmodifiable(_services),
         staff: List.unmodifiable(_staff),
         reviews: const <Review>[],
@@ -106,6 +119,7 @@ class MockVendorRepository implements VendorRepository {
     String? address,
     int? openHour,
     int? closeHour,
+    bool? autoConfirmBookings,
   }) async {
     await Future<void>.delayed(latency);
     _name = name ?? _name;
@@ -114,6 +128,7 @@ class MockVendorRepository implements VendorRepository {
     _address = address ?? _address;
     _openHour = openHour ?? _openHour;
     _closeHour = closeHour ?? _closeHour;
+    _autoConfirmBookings = autoConfirmBookings ?? _autoConfirmBookings;
     return _salon();
   }
 
@@ -213,7 +228,28 @@ class MockVendorRepository implements VendorRepository {
             b.start.year == date.year &&
             b.start.month == date.month &&
             b.start.day == date.day)
+        .where((b) => b.status == BookingStatus.pending ||
+            b.status == BookingStatus.confirmed)
         .toList()
       ..sort((a, b) => a.start.compareTo(b.start));
+  }
+
+  @override
+  Future<VendorBooking> acceptBooking(String id) =>
+      _respond(id, BookingStatus.confirmed);
+
+  @override
+  Future<VendorBooking> declineBooking(String id) =>
+      _respond(id, BookingStatus.declined);
+
+  /// Mirrors the API's guard: only a live pending request transitions.
+  Future<VendorBooking> _respond(String id, BookingStatus status) async {
+    await Future<void>.delayed(latency);
+    final index = _bookings.indexWhere((b) => b.id == id);
+    if (index == -1) throw StateError('Booking not found: $id');
+    if (!_bookings[index].isPending) {
+      throw StateError('This request is no longer pending.');
+    }
+    return _bookings[index] = _bookings[index].copyWith(status: status);
   }
 }

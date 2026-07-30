@@ -1,5 +1,6 @@
 import 'package:beautyhub_vendor/data/repositories/mock_vendor_repository.dart';
 import 'package:beautyhub_vendor/domain/entities/service_category.dart';
+import 'package:beautyhub_vendor/domain/entities/vendor_booking.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -41,8 +42,36 @@ void main() {
     final repo = MockVendorRepository();
     final today = DateTime.now();
 
-    expect(await repo.getBookings(today), hasLength(2));
+    expect(await repo.getBookings(today), hasLength(3));
     expect(
         await repo.getBookings(today.add(const Duration(days: 1))), isEmpty);
+  });
+
+  test('accepting a request confirms it; declining drops it from the day',
+      () async {
+    final repo = MockVendorRepository();
+    final today = DateTime.now();
+    final pending =
+        (await repo.getBookings(today)).singleWhere((b) => b.isPending);
+
+    final accepted = await repo.acceptBooking(pending.id);
+    expect(accepted.status, BookingStatus.confirmed);
+    expect((await repo.getBookings(today)).where((b) => b.isPending), isEmpty);
+
+    // Answering twice is a conflict, matching the API's guard.
+    expect(() => repo.declineBooking(pending.id), throwsStateError);
+  });
+
+  test('a declined request leaves the day', () async {
+    final repo = MockVendorRepository();
+    final today = DateTime.now();
+    final pending =
+        (await repo.getBookings(today)).singleWhere((b) => b.isPending);
+
+    await repo.declineBooking(pending.id);
+
+    final day = await repo.getBookings(today);
+    expect(day.map((b) => b.id), isNot(contains(pending.id)));
+    expect(day, hasLength(2));
   });
 }

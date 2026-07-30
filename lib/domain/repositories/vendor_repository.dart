@@ -17,6 +17,7 @@ abstract interface class VendorRepository {
     String? address,
     int? openHour,
     int? closeHour,
+    bool? autoConfirmBookings,
   });
 
   Future<SalonService> createService({
@@ -44,6 +45,14 @@ abstract interface class VendorRepository {
 
   Future<void> deleteStaff(String id);
 
-  /// Confirmed bookings for [date] (whole day, salon-local), oldest first.
+  /// Pending and confirmed bookings for [date] (whole day, salon-local),
+  /// oldest first.
   Future<List<VendorBooking>> getBookings(DateTime date);
+
+  /// Confirms a pending request. Throws if it is no longer pending — it may
+  /// have lapsed or been answered from another device.
+  Future<VendorBooking> acceptBooking(String id);
+
+  /// Turns a pending request away, freeing its slot.
+  Future<VendorBooking> declineBooking(String id);
 }

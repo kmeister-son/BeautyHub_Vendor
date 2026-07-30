@@ -34,6 +34,7 @@ class ApiVendorRepository implements VendorRepository {
     String? address,
     int? openHour,
     int? closeHour,
+    bool? autoConfirmBookings,
   }) async {
     final json = await _client.patch('/provider/salon', body: _compact({
       'name': name,
@@ -42,6 +43,7 @@ class ApiVendorRepository implements VendorRepository {
       'address': address,
       'openHour': openHour,
       'closeHour': closeHour,
+      'autoConfirmBookings': autoConfirmBookings,
     })) as Map<String, dynamic>;
     return ApiMappers.salon(json);
   }
@@ -118,5 +120,17 @@ class ApiVendorRepository implements VendorRepository {
     return json
         .map((b) => ApiMappers.booking(b as Map<String, dynamic>))
         .toList();
+  }
+
+  @override
+  Future<VendorBooking> acceptBooking(String id) => _respond(id, 'accept');
+
+  @override
+  Future<VendorBooking> declineBooking(String id) => _respond(id, 'decline');
+
+  Future<VendorBooking> _respond(String id, String verb) async {
+    final json = await _client.post('/provider/bookings/$id/$verb')
+        as Map<String, dynamic>;
+    return ApiMappers.booking(json);
   }
 }

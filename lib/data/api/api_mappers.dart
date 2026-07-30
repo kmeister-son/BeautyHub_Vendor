@@ -25,6 +25,7 @@ abstract final class ApiMappers {
         closeHour: json['closeHour'] as int,
         isFeatured: json['isFeatured'] as bool,
         coverSeed: json['coverSeed'] as int,
+        autoConfirmBookings: json['autoConfirmBookings'] as bool? ?? true,
         services: (json['services'] as List<dynamic>)
             .map((s) => service(s as Map<String, dynamic>))
             .toList(),
@@ -77,5 +78,9 @@ abstract final class ApiMappers {
         totalDurationMinutes: json['totalDurationMinutes'] as int,
         totalPrice: (json['totalPrice'] as num).toDouble(),
         status: BookingStatus.values.byName(json['status'] as String),
+        expiresAt: switch (json['expiresAt']) {
+          final String iso => DateTime.parse(iso).toLocal(),
+          _ => null,
+        },
       );
 }

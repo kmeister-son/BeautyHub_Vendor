@@ -24,6 +24,7 @@ class _SalonEditorScreenState extends ConsumerState<SalonEditorScreen> {
   final _address = TextEditingController();
   int _openHour = 9;
   int _closeHour = 18;
+  bool _autoConfirmBookings = true;
 
   bool _prefilled = false;
   bool _submitting = false;
@@ -47,6 +48,7 @@ class _SalonEditorScreenState extends ConsumerState<SalonEditorScreen> {
     _address.text = salon.address;
     _openHour = salon.openHour;
     _closeHour = salon.closeHour;
+    _autoConfirmBookings = salon.autoConfirmBookings;
   }
 
   Future<void> _save() async {
@@ -67,6 +69,7 @@ class _SalonEditorScreenState extends ConsumerState<SalonEditorScreen> {
             address: _address.text.trim(),
             openHour: _openHour,
             closeHour: _closeHour,
+            autoConfirmBookings: _autoConfirmBookings,
           );
       ref.invalidate(vendorSalonProvider);
       if (mounted) context.pop();
@@ -151,6 +154,28 @@ class _SalonEditorScreenState extends ConsumerState<SalonEditorScreen> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 8),
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                value: _autoConfirmBookings,
+                onChanged: (value) =>
+                    setState(() => _autoConfirmBookings = value),
+                title: const Text(
+                  'Confirm bookings instantly',
+                  style:
+                      TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
+                ),
+                subtitle: Text(
+                  _autoConfirmBookings
+                      ? 'Customers get an instant confirmation when they book.'
+                      : 'Every booking arrives as a request you accept or '
+                          'decline. Requests expire after a day.',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 18),
