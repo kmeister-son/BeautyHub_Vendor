@@ -1,5 +1,9 @@
 # BeautyHub Vendor — salon-owner MVP (Flutter)
 
+> Full system docs (all 4 repos, full endpoint/route/entity reference):
+> [beautyhub-api/docs](https://github.com/kmeister-son/BeautyHub_API/tree/main/docs).
+> This file covers just the rules for working in *this* repo.
+
 Vendor-side companion to the BeautyHub customer app (`D:\Mobile_Apps\BeautyHub`).
 Salon owners sign in to see their day's schedule and manage their menu, team,
 and storefront. Android + iOS, tested on an Android emulator. Backend is

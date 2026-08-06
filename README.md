@@ -1,16 +1,31 @@
-# beautyhub_vendor
+# BeautyHub Vendor
 
-A new Flutter project.
+Salon/barbershop owner companion app to the BeautyHub customer app. Flutter,
+Android-first. Lets a salon owner manage their storefront, services, staff,
+and incoming bookings from their phone.
 
-## Getting Started
+## Documentation
 
-This project is a starting point for a Flutter application.
+Full engineering docs for the whole BeautyHub system (this app, the
+customer app, the admin tool, and the shared backend) live in the backend
+repo: **[beautyhub-api/docs](https://github.com/kmeister-son/BeautyHub_API/tree/main/docs)**.
 
-A few resources to get you started if this is your first Flutter project:
+Start there — in particular
+[03 — Vendor app](https://github.com/kmeister-son/BeautyHub_API/blob/main/docs/03-vendor-app.md)
+for this repo specifically, and
+[06 — Local dev setup](https://github.com/kmeister-son/BeautyHub_API/blob/main/docs/06-local-dev-setup.md)
+to get it running end-to-end.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Quick start
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```sh
+flutter pub get
+flutter run              # needs beautyhub-api running locally, see the docs above
+flutter analyze          # must stay at zero issues
+flutter test
+```
+
+No self-registration — log in with a seeded `owner-*@beautyhub.app` account
+(see the docs for the list and password).
+
+See also `CLAUDE.md` in this repo for architecture rules and conventions.
